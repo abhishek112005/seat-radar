@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify OTP</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <main class="page auth-page">
+    <section class="panel auth-panel">
+      <p class="eyebrow">SeatRadar OTP</p>
+      <h1>Verify your phone</h1>
+      <p class="lede">We sent an OTP to <strong>{{ user.phone_number }}</strong>.</p>
+      {% if auth_mode == "local" %}
+        <div class="notice notice-info">
+          <p><strong>Local testing OTP:</strong> <code>{{ dev_code }}</code></p>
+          <p>This is only for local development mode because Twilio Verify is not configured yet.</p>
+        </div>
+      {% endif %}
+      <form method="post" action="/auth/verify">
+        <input type="hidden" name="user_id" value="{{ user.id }}">
+        <label>OTP Code<input name="code" placeholder="123456" required></label>
+        <button type="submit">Verify and Continue</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,102 @@
+/* Custom classes — Tailwind CDN handles the rest */
+
+.form-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 6px;
+  letter-spacing: 0.01em;
+}
+
+.form-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 13px;
+  font-size: 0.8125rem;
+  color: #f1f5f9;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+  outline: none;
+}
+
+.form-input::placeholder {
+  color: #334155;
+}
+
+.form-input:focus {
+  border-color: rgba(249, 115, 22, 0.45);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.alert-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.alert-pill:hover {
+  color: #94a3b8;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.alert-pill.active {
+  background: rgba(249, 115, 22, 0.12);
+  border-color: rgba(249, 115, 22, 0.35);
+  color: #fb923c;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  min-height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.action-btn:hover {
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.action-btn.danger:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+@media (max-width: 640px) {
+  .action-btn {
+    min-height: 40px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+  .alert-pill {
+    min-height: 36px;
+    padding: 7px 16px;
+    font-size: 0.8rem;
+  }
+  .form-input {
+    padding: 12px 14px;
+    font-size: 0.875rem;
+  }
+}

@@ -1,0 +1,11 @@
+data/
+logs/
+config.json
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+venv/
+env/
+*.egg-info/
