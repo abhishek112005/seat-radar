@@ -216,6 +216,15 @@ async def auth_google_callback(
     return resp
 
 
+@app.post("/profile/phone")
+async def save_phone(request: Request, to_number: str = Form("")):
+    user = await current_user(request)
+    if not user:
+        return RedirectResponse("/", status_code=303)
+    await db.update_user_to_number(user.id, to_number)
+    return RedirectResponse("/", status_code=303)
+
+
 @app.post("/auth/logout")
 async def logout(request: Request):
     token = request.cookies.get(SESSION_COOKIE)

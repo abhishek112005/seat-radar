@@ -19,39 +19,62 @@ class NotificationDispatcher:
         self.config = config
         self.default_methods = config.get("notify_methods", [])
         self.notifiers = {}
+        self._twilio: Dict[str, str] = {}
         self._init_notifiers()
 
     def _init_notifiers(self):
-        """Initialize Twilio SMS and call notifiers."""
         twilio = self.config.get("notifiers", {}).get("twilio", {})
-        if not all([
-            twilio.get("account_sid"),
-            twilio.get("auth_token"),
-            twilio.get("from_number"),
-            twilio.get("to_number"),
-        ]):
+        if not all([twilio.get("account_sid"), twilio.get("auth_token"), twilio.get("from_number")]):
             return
 
-        self.notifiers["call"] = TwilioCallNotifier(
-            account_sid=twilio["account_sid"],
-            auth_token=twilio["auth_token"],
-            from_number=twilio["from_number"],
-            to_number=twilio["to_number"],
-        )
-        self.notifiers["sms"] = TwilioSMSNotifier(
-            account_sid=twilio["account_sid"],
-            auth_token=twilio["auth_token"],
-            from_number=twilio["from_number"],
-            to_number=twilio["to_number"],
-        )
-        whatsapp_from = twilio.get("whatsapp_from_number") or twilio.get("from_number")
-        self.notifiers["whatsapp"] = TwilioWhatsAppNotifier(
-            account_sid=twilio["account_sid"],
-            auth_token=twilio["auth_token"],
-            from_number=whatsapp_from,
-            to_number=twilio["to_number"],
-        )
-        logger.info("Twilio SMS/WhatsApp/call notifiers initialized")
+        self._twilio = {
+            "account_sid": twilio["account_sid"],
+            "auth_token": twilio["auth_token"],
+            "from_number": twilio["from_number"],
+            "whatsapp_from": twilio.get("whatsapp_from_number") or twilio["from_number"],
+        }
+
+        default_to = twilio.get("to_number", "")
+        if default_to:
+            self.notifiers = self._build_notifiers(default_to)
+            logger.info("Twilio SMS/WhatsApp/call notifiers initialized")
+
+    def _build_notifiers(self, to_number: str) -> dict:
+        t = self._twilio
+        return {
+            "sms": TwilioSMSNotifier(t["account_sid"], t["auth_token"], t["from_number"], to_number),
+            "whatsapp": TwilioWhatsAppNotifier(t["account_sid"], t["auth_token"], t["whatsapp_from"], to_number),
+            "call": TwilioCallNotifier(t["account_sid"], t["auth_token"], t["from_number"], to_number),
+        }
+
+    async def send_message_to(
+        self, message: str, to_number: str, methods: Optional[Iterable[str]] = None
+    ) -> bool:
+        """Send to a specific number, overriding the default to_number."""
+        if not to_number or not self._twilio:
+            return await self.send_message(message, methods)
+        notifiers = self._build_notifiers(to_number)
+        chosen = list(methods or self.default_methods)
+        results = {}
+        for method in chosen:
+            notifier = notifiers.get(method)
+            if not notifier:
+                results[method] = False
+                continue
+            try:
+                results[method] = await notifier.send(message)
+            except Exception as exc:
+                logger.error("Error sending %s to %s: %s", method, to_number, exc)
+                results[method] = False
+        return any(results.values())
+
+    async def send_message_batch_to(
+        self, messages: List[str], to_number: str, methods: Optional[Iterable[str]] = None
+    ) -> bool:
+        overall = False
+        for message in messages:
+            overall = await self.send_message_to(message, to_number, methods) or overall
+        return overall
 
     async def send_message(self, message: str, methods: Optional[Iterable[str]] = None) -> bool:
         """Send one message through the selected notification methods."""

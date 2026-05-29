@@ -35,6 +35,7 @@ class UserAccount:
     email: str = ""
     google_sub: str = ""
     avatar_url: str = ""
+    to_number: str = ""
     is_verified: bool = False
     created_at: str = field(default_factory=utcnow_iso)
     telegram_chat_id: str = ""

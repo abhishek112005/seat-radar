@@ -117,6 +117,7 @@ class Database:
             ("email", "TEXT DEFAULT ''"),
             ("google_sub", "TEXT DEFAULT ''"),
             ("avatar_url", "TEXT DEFAULT ''"),
+            ("to_number", "TEXT DEFAULT ''"),
         ]:
             try:
                 await self._db.execute(f"ALTER TABLE users ADD COLUMN {col} {defn}")
@@ -207,6 +208,13 @@ class Database:
             )
             await self._db.commit()
         return user
+
+    async def update_user_to_number(self, user_id: str, to_number: str) -> None:
+        async with self._write_lock:
+            await self._db.execute(
+                "UPDATE users SET to_number=? WHERE id=?", (to_number.strip(), user_id)
+            )
+            await self._db.commit()
 
     async def set_user_telegram(self, user_id: str, chat_id: str) -> None:
         async with self._write_lock:
@@ -369,6 +377,7 @@ class Database:
             email=d.get("email") or "",
             google_sub=d.get("google_sub") or "",
             avatar_url=d.get("avatar_url") or "",
+            to_number=d.get("to_number") or "",
             is_verified=bool(d["is_verified"]),
             created_at=d["created_at"],
             telegram_chat_id=d.get("telegram_chat_id") or "",

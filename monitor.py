@@ -209,7 +209,6 @@ class WatchMonitorService:
     async def start(self) -> None:
         if self._task:
             return
-        await self._ensure_scraper()
         self._last_heartbeat = time.monotonic()
         self._task = asyncio.create_task(self._run_loop(), name="seatradar-monitor")
         self._watchdog_task = asyncio.create_task(self._watchdog(), name="seatradar-watchdog")
@@ -461,15 +460,19 @@ class WatchMonitorService:
         self, watch: WatchConfig, events: Dict[str, str]
     ) -> bool:
         messages = list(events.values())
-        success = await self.dispatcher.send_message_batch(messages, watch.notify_methods)
+
+        user = await self.db.get_user(watch.user_id)
+        to_number = (user.to_number if user else "") or ""
+
+        if to_number:
+            success = await self.dispatcher.send_message_batch_to(
+                messages, to_number, watch.notify_methods
+            )
+        else:
+            success = await self.dispatcher.send_message_batch(messages, watch.notify_methods)
 
         # Telegram alert (Feature 10)
-        chat_id = watch.telegram_chat_id or ""
-        if not chat_id:
-            # Check user's telegram_chat_id
-            user = await self.db.get_user(watch.user_id)
-            if user:
-                chat_id = user.telegram_chat_id
+        chat_id = watch.telegram_chat_id or (user.telegram_chat_id if user else "")
         if chat_id and self.telegram_bot:
             for msg in messages:
                 await self.telegram_bot.send_alert(chat_id, msg)
