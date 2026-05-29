@@ -40,4 +40,6 @@ wheels/
 *_alerted_seats.json
 data/
 
-C:\Abhishek\PROJECTS\SeatRadar\.claude
+# Claude Code
+.claude/
+
